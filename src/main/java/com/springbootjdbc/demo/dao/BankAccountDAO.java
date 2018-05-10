@@ -1,8 +1,10 @@
 package com.springbootjdbc.demo.dao;
 
+import com.springbootjdbc.demo.exception.BankTransactionException;
 import com.springbootjdbc.demo.mapper.BankAccountMapper;
 import com.springbootjdbc.demo.model.BankAccountInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -30,14 +32,37 @@ public class BankAccountDAO extends JdbcDaoSupport {
     }
 
     public BankAccountInfo findBankAccount (Long id){
-        return null;
+        // Select ba.Id, ba.Full_Name, ba.Balance From Bank_Account ba
+        // Where ba.Id = ?
+        String sql = BankAccountMapper.BASE_SQL + " where ba.id = ?";
+
+        Object[] params = new Object[]{id};
+        BankAccountMapper mapper = new BankAccountMapper();
+        try {
+            BankAccountInfo accountInfo = this.getJdbcTemplate().queryForObject(sql, params, mapper);
+            return accountInfo;
+        }catch (EmptyResultDataAccessException e){
+            return null;
+        }
     }
     @Transactional(propagation = Propagation.MANDATORY)
-    public void addAmount (Long id, double amount){
-
+    public void addAmount (Long id, double amount) throws BankTransactionException {
+        BankAccountInfo accountInfo = this.findBankAccount(id);
+        if (accountInfo == null){
+            throw new BankTransactionException("Account with id:" + id + " not found");
+        }
+        double newBalance = accountInfo.getBalance() + amount;
+        if (accountInfo.getBalance() + amount < 0){
+            throw new BankTransactionException("The money in the account '" + id + "' is not enough (" + accountInfo.getBalance() + ")");
+        }
+        accountInfo.setBalance(newBalance);
+        //Update to DB
+        String sqlUpdate = "Update Bank_Account set Balance = ? where id = ?";
+        this.getJdbcTemplate().update(sqlUpdate,accountInfo.getBalance(),accountInfo.getId());
     }
-    @Transactional(propagation = Propagation.MANDATORY)
-    public void sendMoney(Long fromAccountId, Long toAccountId, double amount){
-
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = BankTransactionException.class)
+    public void sendMoney(Long fromAccountId, Long toAccountId, double amount) throws BankTransactionException{
+        addAmount(toAccountId, amount);
+        addAmount(fromAccountId, -amount);
     }
 }
