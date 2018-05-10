@@ -1,33 +1,33 @@
 package com.springbootjdbc.demo.form;
 
 public class SendMoneyForm {
-    private Long fromAccount;
-    private Long toAccount;
+    private Long fromAccountId;
+    private Long toAccountId;
     private Double amount;
 
     public SendMoneyForm() {
     }
 
-    public SendMoneyForm(Long fromAccount, Long toAccount, Double amount) {
-        this.fromAccount = fromAccount;
-        this.toAccount = toAccount;
+    public SendMoneyForm(Long fromAccountId, Long toAccountId, Double amount) {
+        this.fromAccountId = fromAccountId;
+        this.toAccountId = toAccountId;
         this.amount = amount;
     }
 
-    public Long getFromAccount() {
-        return fromAccount;
+    public Long getFromAccountId() {
+        return fromAccountId;
     }
 
-    public void setFromAccount(Long fromAccount) {
-        this.fromAccount = fromAccount;
+    public void setFromAccountId(Long fromAccountId) {
+        this.fromAccountId = fromAccountId;
     }
 
-    public Long getToAccount() {
-        return toAccount;
+    public Long getToAccountId() {
+        return toAccountId;
     }
 
-    public void setToAccount(Long toAccount) {
-        this.toAccount = toAccount;
+    public void setToAccountId(Long toAccountId) {
+        this.toAccountId = toAccountId;
     }
 
     public Double getAmount() {
